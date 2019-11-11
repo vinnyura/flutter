@@ -1,0 +1,83 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
+class NewHome extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: SafeArea(
+          child: Center(
+              child: SwitchWidget()
+          ),
+        )
+    );
+  }
+}
+
+class SwitchWidget extends StatefulWidget {
+  @override
+  SwitchWidgetClass createState() => new SwitchWidgetClass();
+}
+
+class SwitchWidgetClass extends State {
+
+  bool switchControl;
+  var textHolder = 'Switch is OFF';
+
+  void toggleSwitch(bool value) {
+
+    if(switchControl == false)
+    {
+      setState(() {
+        switchControl = true;
+        textHolder = 'Switch is ON';
+      });
+      print('Switch is ON');
+      Firestore.instance
+          .collection("status")
+          .document("open").setData({"open": true});
+    }
+    else
+    {
+      setState(() {
+        switchControl = false;
+        textHolder = 'Switch is OFF';
+      });
+      print('Switch is OFF');
+      Firestore.instance
+          .collection("status")
+          .document("open").setData({"open": false});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children:[ Transform.scale(
+            scale: 1.5,
+            child: StreamBuilder<DocumentSnapshot>(
+              stream: Firestore.instance
+                .collection("status")
+                .document("open")
+                .snapshots(),
+                initialData: null,
+              builder: (context, snapshot) {
+                bool switchControl = snapshot.data["open"];
+                return Switch(
+                  onChanged: toggleSwitch,
+                  value: switchControl,
+                  activeColor: Colors.green[900],
+                  activeTrackColor: Colors.green,
+                  inactiveThumbColor: Colors.red[900],
+                  inactiveTrackColor: Colors.red,
+                );
+              }
+            )
+        ),
+
+          Text('$textHolder', style: TextStyle(fontSize: 24),)
+
+        ]);
+  }
+}
